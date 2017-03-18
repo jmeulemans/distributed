@@ -1,6 +1,6 @@
 **Distributed Sort**
 ====================
-**Information**
+** Information**
 A distributed map-reduce sorting implementation built on the Thrift framework. This user can select redundancy of computations, and an analysis is provided for the trade off of performance and reliability as this redundancy is varied.
 **Authors**
 Jeremy Meulemans and Connor McMahon
