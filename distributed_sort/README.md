@@ -1,69 +1,71 @@
 **Distributed Sort**
 ====================
-
+**Information**
+A distributed map-reduce sorting implementation built on the Thrift framework. This user can select redundancy of computations, and an analysis is provided for the trade off of performance and reliability as this redundancy is varied.
+**Authors**
 Jeremy Meulemans and Connor McMahon
 
-**User:**
+**User Guide:**
 
 Compilation: 
 
-Start with clean copy of the distributed_sort/ directory. From this directory,  run ./compile.sh. 
+Start with clean copy of the `distributed_sort/` directory. From this directory,  run `./compile.sh`.
 
 Server: 
 
-To start the server, run ./server.sh <files_per_merge> <universal_fail_prob> where files_per_merge is the number of files processed during one merge and universal_fail_prob is the failure probability assigned to each compute node.
+To start the server, run `./server.sh <files_per_merge> <universal_fail_prob>` where `files_per_merge` is the number of files processed during one merge and `universal_fail_prob` is the failure probability assigned to each compute node.
 
 Compute Node: 
 
-To add a compute node, on the same machine as the Server, or a remote machine, run ./computenode.sh <port>. This will register the compute node with the server, and start the compute node on the provided port. 
+To add a compute node, on the same machine as the Server, or a remote machine, run `./computenode.sh <port>`. This will register the compute node with the server, and start the compute node on the provided port. 
 
 User Interface:
 
-To interact with the system, set up a server and the requisite number of compute nodes. A client can then be started with the command ./client.sh server_list.txt, where server_list.txt is a list of all the compute nodes in the system maintained by the running server. The file server_list.txt should be present in the directory if running on cselabs.
+To interact with the system, set up a server and the requisite number of compute nodes. A client can then be started with the command `./client.sh server_list.txt`, where `server_list.txt` is a list of all the compute nodes in the system maintained by the running server. The file `server_list.txt` should be present in the directory if running on cselabs.
 
 The commands to interact with the system are:
 
-1. sort,<filename> - sort a filename specified by the user, returning the filename of the sorted file, or an error, as reported by the server. This file should be located in the pa3/ directory.
+1. `sort,<filename>` - sort a filename specified by the user, returning the filename of the sorted file, or an error, as reported by the server. This file should be located in the pa3/ directory.
 
-2. info, print information about each compute node, including number of tasks received and average time per task. Information is also printed about the server, including the number of faults that have occurred, and the number of tasks sent, and the number of redundant tasks killed.
+2. `info`, print information about each compute node, including number of tasks received and average time per task. Information is also printed about the server, including the number of faults that have occurred, and the number of tasks sent, and the number of redundant tasks killed.
 
-3. set,chunksize,<value> - sets the chunksize to be processed
+3. `set,chunksize,<value>` - sets the chunksize to be processed
 
-4. set,failprob,<value> - sets the fail probability of all of the nodes
+4. `set,failprob,<value>` - sets the fail probability of all of the nodes
 
-5. set,nodesperjob,<value> - sets the number of nodes to run for each task
+5. `set,nodesperjob,<value>` - sets the number of nodes to run for each task
 
-6. set, taskspermerge,<value> - sets the number of files to be merged per merge round
+6. `set,taskspermerge,<value>` - sets the number of files to be merged per merge round
 
-7. quit - quit the client program
+7. `quit` - quit the client program
 
 Testing:
 
-Create a system with 1 server and at least 4 compute nodes. Sort a file and note the name of the resultant sorted file <sorted file>. Then run python verify.py <sorted file> <verification file>, where <verification file> is a known sorted version of the input file independent of the output of the system. For example, python verify.py 2000000_OUTPUT 2000000_sorted. This script will print the count of numbers in each file and then True or False as to whether the files have the same numbers in the same order. This True or False indicates the success of the sort. 
+Create a system with 1 server and at least 4 compute nodes. Sort a file and note the name of the resultant sorted file `<sorted file>`. Then run `python verify.py <sorted file> <verification file>`, where `<verification file>` is a known sorted version of the input file independent of the output of the system. For example, `python verify.py 2000000_OUTPUT 2000000_sorted`. This script will print the count of numbers in each file and then `True` or `False` as to whether the files have the same numbers in the same order. This `True` or `False` indicates the success of the sort. 
 
 **Design:**
-
+	 
 **Client.java:**
 
 Summary: Implementation of Client construct
 
 Important attributes:
 
-* ServerClient - how the client interacts with the server
+* `ServerClient` - how the client interacts with the server
 
 Important Functions:
 
 Main body
 
-* parseServers - parses the information from server_list.txt to create a ServerClient
+* `parseServers` - parses the information from server_list.txt to create a ServerClient
 
 ServerClient
 
-* sort - client implementation of sort from ClientToServerService interface
+* `sort` - client implementation of sort from ClientToServerService interface
 
-* getInfoFromServer - client implementation of getInfoFromServer from ClientToServerService interface
+* `getInfoFromServer` - client implementation of getInfoFromServer from ClientToServerService interface
 
-* setParameter - client implementation of setParameter from ClientToServerService interface
+* `setParameter` - client implementation of setParameter from ClientToServerService interface
 
 **Server.java:**
 
@@ -71,53 +73,53 @@ Summary:  Implementation of the Server construct
 
 Important attributes:
 
-* computeNodes - a thread safe queue keeping track of the compute nodes available to the server
+* `computeNodes` - a thread safe queue keeping track of the compute nodes available to the server
 
-* mergeSize - how many files should be merged at once
+* `mergeSize` - how many files should be merged at once
 
-* failProb - a global failure probability for all compute nodes
+* `failProb` - a global failure probability for all compute nodes
 
-* computeNodesPerTask - how many compute nodes should be assigned to a task (if > 1, the rest of the nodes are redundant to provide robustness against node failure)
+* `computeNodesPerTask` - how many compute nodes should be assigned to a task (if > 1, the rest of the nodes are redundant to provide robustness against node failure)
 
-* id - a global variable used to assign a unique id to each task.
+* `id` - a global variable used to assign a unique id to each task.
 
 Important Functions:
 
 Main body
 
-* getJobNodes - returns a random list of jobs the size of computeNodesPerTask for each Task Runnable
+* `getJobNodes` - returns a random list of jobs the size of computeNodesPerTask for each Task Runnable
 
-ServerHandler
+**ServerHandler**
 
-* sort - the server facing implementation of Sort in the ClientToServerService interface, controls the dispatch of all sort and merge tasks.
+* `sort` - the server facing implementation of Sort in the ClientToServerService interface, controls the dispatch of all sort and merge tasks.
 
-* registerNode - the server facing implementation of registerNode in the NodeToServerService interface, loading the node information into computeNodes
+* `registerNode` - the server facing implementation of registerNode in the NodeToServerService interface, loading the node information into computeNodes
 
-* setUpMergeTasks - private method that sets up merge tasks
+* `setUpMergeTasks` - private method that sets up merge tasks
 
-* setUpSortTasks - private method that sets up sort tasks
+* `setUpSortTasks` - private method that sets up sort tasks
 
-* getInfoFromNode - queries computeNode information and returns it to the client
+* `getInfoFromNode` - queries computeNode information and returns it to the client
 
-* setParameter - sets the parameter values, forwarding them to the compute nodes if neccessary
+* `setParameter` - sets the parameter values, forwarding them to the compute nodes if neccessary
 
-* runTasks - a private method to actually run what tasks are generated in setUpMergeTasks or setUpSortTasks, restarting tasks as necessary until all successfully complete, or all compute nodes in the system have failed. 
+* `runTasks` - a private method to actually run what tasks are generated in setUpMergeTasks or setUpSortTasks, restarting tasks as necessary until all successfully complete, or all compute nodes in the system have failed. 
 
-NodeClient
+**NodeClient**
 
-* sort - client facing implementation of sort in ServerToNodeService interface
+* `sort` - client facing implementation of sort in ServerToNodeService interface
 
-* merge - client facing implementation of merge in ServerToNodeService interface
+* `merge` - client facing implementation of merge in ServerToNodeService interface
 
-* kill - client facing implementation of kill in ServerToNodeService interface
+* `kill~ - client facing implementation of kill in ServerToNodeService interface
 
-* ping - client facing implementation of ping in ServerToNodeService interface
+* `ping` - client facing implementation of ping in ServerToNodeService interface
 
-* notifyOfJob - client facing implementation of notifyOfJob in ServerToNodeService interface
+* `notifyOfJob` - client facing implementation of notifyOfJob in ServerToNodeService interface
 
-* setParameter - client facing implementation of setParameter in ServerToNodeService interface
+* `setParameter` - client facing implementation of setParameter in ServerToNodeService interface
 
-* getInfoFromNode - client facing implementation of getInfoFromNode in ServerToNodeService interface
+* `getInfoFromNode` - client facing implementation of getInfoFromNode in ServerToNodeService interface
 
 **ComputeNode.java:**
 
@@ -125,29 +127,29 @@ Summary: Our implementation of the compute node construct
 
 Important attributes:
 
-* handler- handles requests from server
+* `handler`- handles requests from server
 
-* runningProcess - a map from ids to threads for redundant subtasks to be killed 
+* `runningProcess` - a map from ids to threads for redundant subtasks to be killed 
 
 Important Functions:
 
 Main body
 
-* registerRunnable - private method to set up a compute node
+* `registerRunnable` - private method to set up a compute node
 
 ComputeNodeServerHandler
 
-* sort - performs the sort of the chunk it receives and writes to a new file
+* `sort` - performs the sort of the chunk it receives and writes to a new file
 
-* merge -  performs a merge of the files received and writes to a new file
+* `merge` -  performs a merge of the files received and writes to a new file
 
-* notifyOfJob - tests to see if the compute node will fail for this job, and if it will, sets a random time interval for it to fail at, so it can fail during either a sort or a merge
+* `notifyOfJob` - tests to see if the compute node will fail for this job, and if it will, sets a random time interval for it to fail at, so it can fail during either a sort or a merge
 
-* getInfoFromNode - returns the node information to the server
+* `getInfoFromNode` - returns the node information to the server
 
 ServerClient
 
-* registerNode - sends ip and port to the server so the server knows how to contact the compute node.
+* `registerNode` - sends ip and port to the server so the server knows how to contact the compute node.
 
 **Performance:**
 
